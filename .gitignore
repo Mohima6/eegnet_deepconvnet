@@ -1,0 +1,9 @@
+# Ignore the entire EEG dataset
+dataset/
+
+# Ignore NumPy data files
+*.npz
+
+# Ignore Python cache
+__pycache__/
+*.pyc
