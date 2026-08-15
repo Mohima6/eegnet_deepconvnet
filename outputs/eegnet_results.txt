@@ -1,5 +1,5 @@
-EEGNet — 3-Class Classification (AD vs FTD vs CN)
-=======================================================
+EEGNet â€” 3-Class Classification (AD vs FTD vs CN)
+
 
 Split: 75% train / 15% val / 10% test (subject-wise, stratified per class)
 Channels: 19 | Window: 512 samples
