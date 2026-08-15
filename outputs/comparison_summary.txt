@@ -1,43 +1,13 @@
-Model Comparison: EEGNet vs DeepConvNet
-=========================================
+Model Comparison — 3-Class EEG Classification (AD vs FTD vs CN)
+============================================================
 
+EEGNET
+  Best epoch: 13
+  Best validation accuracy: 0.9309
+  FINAL test accuracy: 0.6675
 
-=== EEGNET ===
-Final test accuracy: 0.8670
-Best test accuracy (during training): 0.8670
-Confusion matrix (rows=true, cols=pred, order=[AD,HC]):
-[[1956  582]
- [  54 2190]]
+DEEPCONVNET
+  Best epoch: 12
+  Best validation accuracy: 0.8836
+  FINAL test accuracy: 0.7418
 
-              precision    recall  f1-score   support
-
-          AD       0.97      0.77      0.86      2538
-          HC       0.79      0.98      0.87      2244
-
-    accuracy                           0.87      4782
-   macro avg       0.88      0.87      0.87      4782
-weighted avg       0.89      0.87      0.87      4782
-
-
-
-=== DEEPCONVNET ===
-Final test accuracy: 0.9078
-Best test accuracy (during training): 0.9695
-Confusion matrix (rows=true, cols=pred, order=[AD,HC]):
-[[2300  238]
- [ 203 2041]]
-
-              precision    recall  f1-score   support
-
-          AD       0.92      0.91      0.91      2538
-          HC       0.90      0.91      0.90      2244
-
-    accuracy                           0.91      4782
-   macro avg       0.91      0.91      0.91      4782
-weighted avg       0.91      0.91      0.91      4782
-
-
-
---- Summary ---
-eegnet          final_test_acc = 0.8670  best_test_acc = 0.8670
-deepconvnet     final_test_acc = 0.9078  best_test_acc = 0.9695

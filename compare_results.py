@@ -1,105 +1,72 @@
 import os
 import numpy as np
-from sklearn.metrics import classification_report, confusion_matrix
 import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
 
 SAVE_DIR = "outputs"
-MODEL_NAMES = ["eegnet", "deepconvnet"]
+FIG_DIR = os.path.join(SAVE_DIR, "figures")
+os.makedirs(FIG_DIR, exist_ok=True)
+
+class_names = {'A': 'AD', 'F': 'FTD', 'C': 'CN'}
 
 results = {}
-for name in MODEL_NAMES:
+for name in ["eegnet", "deepconvnet"]:
     path = os.path.join(SAVE_DIR, f"{name}_results.npz")
-    if os.path.exists(path):
-        results[name] = np.load(path, allow_pickle=True)
-    else:
+    if not os.path.exists(path):
         print(f"[skip] {name}: no results file found, run train_{name}.py first")
+        continue
+    r = np.load(path, allow_pickle=True)
+    results[name] = r
 
-if not results:
-    raise RuntimeError("No results found. Run train_eegnet.py and train_deepconvnet.py first.")
+    classes = list(r['classes'])
+    label_names = [class_names.get(c, c) for c in classes]
 
-# ---- Print + collect summary ----
-summary_lines = []
-summary_lines.append("Model Comparison: EEGNet vs DeepConvNet")
-summary_lines.append("=========================================\n")
+    print(f"\n=== {name.upper()} ===")
+    print(f"Best epoch: {int(r['best_epoch'])} | Best val_acc: {float(r['best_val_acc']):.4f}")
+    print(f"Final test_acc: {float(r['test_acc']):.4f}")
+    print(classification_report(r['labels'], r['preds'], target_names=label_names, digits=4, zero_division=0))
 
-for name, r in results.items():
-    test_acc = float(r['test_acc'])
-    best_acc = float(r['best_test_acc']) if 'best_test_acc' in r else test_acc
-    report = classification_report(r['labels'], r['preds'], target_names=['AD', 'HC'])
-    cm = confusion_matrix(r['labels'], r['preds'])
+if len(results) < 2:
+    print("\nNeed both eegnet_results.npz and deepconvnet_results.npz to compare.")
+else:
+    # ---- Text summary ----
+    summary_path = os.path.join(SAVE_DIR, "comparison_summary.txt")
+    with open(summary_path, "w") as f:
+        f.write("Model Comparison — 3-Class EEG Classification (AD vs FTD vs CN)\n" + "=" * 60 + "\n\n")
+        for name, r in results.items():
+            f.write(f"{name.upper()}\n")
+            f.write(f"  Best epoch: {int(r['best_epoch'])}\n")
+            f.write(f"  Best validation accuracy: {float(r['best_val_acc']):.4f}\n")
+            f.write(f"  FINAL test accuracy: {float(r['test_acc']):.4f}\n\n")
+    print(f"\nSaved comparison summary to {summary_path}")
 
-    block = f"\n=== {name.upper()} ===\n"
-    block += f"Final test accuracy: {test_acc:.4f}\n"
-    block += f"Best test accuracy (during training): {best_acc:.4f}\n"
-    block += f"Confusion matrix (rows=true, cols=pred, order=[AD,HC]):\n{cm}\n"
-    block += f"\n{report}\n"
+    # ---- Bar chart: final test accuracy ----
+    names = list(results.keys())
+    accs = [float(results[n]['test_acc']) for n in names]
+    fig, ax = plt.subplots(figsize=(6, 4.5))
+    bars = ax.bar(names, accs, color=['steelblue', 'seagreen'])
+    for bar, acc in zip(bars, accs):
+        ax.text(bar.get_x() + bar.get_width()/2, acc + 0.01, f"{acc:.3f}", ha='center')
+    ax.set_ylim(0, 1.0)
+    ax.set_ylabel("Test accuracy")
+    ax.set_title("EEGNet vs DeepConvNet — Final Test Accuracy")
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "comparison_accuracy_bar.png"), dpi=150)
+    plt.close(fig)
 
-    print(block)
-    summary_lines.append(block)
+    # ---- Combined val accuracy curves ----
+    fig, ax = plt.subplots(figsize=(8, 5))
+    colors = {'eegnet': 'steelblue', 'deepconvnet': 'seagreen'}
+    for name, r in results.items():
+        ax.plot(r['val_acc'], label=f"{name} val_acc", color=colors.get(name))
+        ax.plot(r['train_acc'], label=f"{name} train_acc", linestyle='--', alpha=0.6, color=colors.get(name))
+    ax.set_xlabel("Epoch"); ax.set_ylabel("Accuracy")
+    ax.set_title("Training Curves — EEGNet vs DeepConvNet")
+    ax.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIG_DIR, "comparison_training_curves.png"), dpi=150)
+    plt.close(fig)
 
-# ---- Summary table ----
-print("\n--- Summary ---")
-summary_lines.append("\n--- Summary ---")
-for name, r in results.items():
-    line = f"{name:15s} final_test_acc = {float(r['test_acc']):.4f}  best_test_acc = {float(r.get('best_test_acc', r['test_acc'])):.4f}"
-    print(line)
-    summary_lines.append(line)
+    print("Saved comparison_accuracy_bar.png and comparison_training_curves.png")
 
-# ---- Save text summary ----
-txt_path = os.path.join(SAVE_DIR, "comparison_summary.txt")
-with open(txt_path, "w") as f:
-    f.write("\n".join(summary_lines))
-print(f"\nSaved comparison summary to {txt_path}")
 
-# ---- Figure 1: Test accuracy bar chart ----
-plt.figure(figsize=(6, 5))
-names = list(results.keys())
-accs = [float(results[n]['test_acc']) for n in names]
-best_accs = [float(results[n].get('best_test_acc', results[n]['test_acc'])) for n in names]
-
-x = np.arange(len(names))
-width = 0.35
-plt.bar(x - width/2, accs, width, label='Final (last epoch)', color='steelblue')
-plt.bar(x + width/2, best_accs, width, label='Best (during training)', color='darkorange')
-plt.xticks(x, [n.upper() for n in names])
-plt.ylabel('Test Accuracy')
-plt.ylim(0, 1)
-plt.title('Test Accuracy Comparison: EEGNet vs DeepConvNet')
-plt.legend()
-plt.tight_layout()
-plt.savefig(os.path.join(SAVE_DIR, "comparison_accuracy_bar.png"), dpi=150)
-print(f"Saved bar chart to {SAVE_DIR}/comparison_accuracy_bar.png")
-plt.close()
-
-# ---- Figure 2: Training curves (loss + train/test accuracy) side by side ----
-fig, axes = plt.subplots(1, 2, figsize=(12, 5))
-
-for name, r in results.items():
-    if 'train_acc' in r:
-        axes[0].plot(r['train_acc'], label=f'{name} train_acc')
-    if 'test_acc_history' in r:
-        axes[0].plot(r['test_acc_history'], linestyle='--', label=f'{name} test_acc')
-
-axes[0].set_title('Accuracy over Epochs')
-axes[0].set_xlabel('Epoch')
-axes[0].set_ylabel('Accuracy')
-axes[0].legend(fontsize=8)
-
-for name, r in results.items():
-    if 'train_loss' in r:
-        axes[1].plot(r['train_loss'], label=f'{name} train_loss')
-
-axes[1].set_title('Training Loss over Epochs')
-axes[1].set_xlabel('Epoch')
-axes[1].set_ylabel('Loss')
-axes[1].legend(fontsize=8)
-
-plt.tight_layout()
-plt.savefig(os.path.join(SAVE_DIR, "comparison_training_curves.png"), dpi=150)
-print(f"Saved training curves to {SAVE_DIR}/comparison_training_curves.png")
-plt.close()
-
-print("\nDone. Check the 'outputs' folder for:")
-print("  - comparison_summary.txt")
-print("  - comparison_accuracy_bar.png")
-print("  - comparison_training_curves.png")

@@ -1,8 +1,9 @@
 import torch
 import torch.nn as nn
 
+
 class EEGNet(nn.Module):
-    def __init__(self, n_channels=19, num_classes=2, dropout=0.25):
+    def __init__(self, n_channels=19, num_classes=3, dropout=0.25):
         super(EEGNet, self).__init__()
 
         self.firstconv = nn.Sequential(
@@ -26,7 +27,6 @@ class EEGNet(nn.Module):
             nn.Dropout(p=dropout)
         )
 
-        # LazyLinear infers in_features automatically from the actual input size
         self.classify = nn.LazyLinear(num_classes)
 
     def forward(self, x):
@@ -39,7 +39,7 @@ class EEGNet(nn.Module):
 
 
 class DeepConvNet(nn.Module):
-    def __init__(self, n_channels=19, num_classes=2):
+    def __init__(self, n_channels=19, num_classes=3, dropout=0.5):
         super(DeepConvNet, self).__init__()
 
         self.conv1 = nn.Sequential(
@@ -48,7 +48,7 @@ class DeepConvNet(nn.Module):
             nn.BatchNorm2d(25),
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Dropout(p=0.5)
+            nn.Dropout(p=dropout)
         )
 
         self.conv2 = nn.Sequential(
@@ -56,7 +56,7 @@ class DeepConvNet(nn.Module):
             nn.BatchNorm2d(50),
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Dropout(p=0.5)
+            nn.Dropout(p=dropout)
         )
 
         self.conv3 = nn.Sequential(
@@ -64,7 +64,7 @@ class DeepConvNet(nn.Module):
             nn.BatchNorm2d(100),
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Dropout(p=0.5)
+            nn.Dropout(p=dropout)
         )
 
         self.conv4 = nn.Sequential(
@@ -72,7 +72,7 @@ class DeepConvNet(nn.Module):
             nn.BatchNorm2d(200),
             nn.ELU(),
             nn.MaxPool2d(kernel_size=(1, 2)),
-            nn.Dropout(p=0.5)
+            nn.Dropout(p=dropout)
         )
 
         self.classify = nn.LazyLinear(num_classes)
@@ -88,7 +88,7 @@ class DeepConvNet(nn.Module):
 
 
 class MLP(nn.Module):
-    def __init__(self, num_classes=2):
+    def __init__(self, num_classes=3):
         super(MLP, self).__init__()
         self.net = nn.Sequential(
             nn.LazyLinear(512),

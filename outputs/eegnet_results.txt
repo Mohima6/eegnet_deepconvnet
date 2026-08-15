@@ -1,0 +1,35 @@
+EEGNet — 3-Class Classification (AD vs FTD vs CN)
+=======================================================
+
+Split: 75% train / 15% val / 10% test (subject-wise, stratified per class)
+Channels: 19 | Window: 512 samples
+Trainable parameters: 18,483
+Windows -> train=25350, val=4354, test=4000
+
+Trained for 25 epochs (early stopping patience=12)
+Best epoch: 13 | Best validation accuracy: 0.9309
+FINAL test accuracy (best-on-val checkpoint, test set touched exactly once): 0.6675
+
+Classification report (test set):
+              precision    recall  f1-score   support
+
+          AD     0.7687    0.5275    0.6257      1871
+         FTD     0.4303    0.8867    0.5794       856
+          CN     0.9706    0.7258    0.8306      1273
+
+    accuracy                         0.6675      4000
+   macro avg     0.7232    0.7134    0.6785      4000
+weighted avg     0.7605    0.6675    0.6810      4000
+
+
+Confusion matrix (order: ['AD', 'FTD', 'CN']):
+[[987 866  18]
+ [ 87 759  10]
+ [210 139 924]]
+
+Checkpoint log (epoch, val_acc, train_acc, val_loss):
+  epoch   5 | val_acc=0.6527 | train_acc=0.8366 | val_loss=0.7359
+  epoch  10 | val_acc=0.6775 | train_acc=0.8796 | val_loss=0.8252
+  epoch  15 | val_acc=0.8050 | train_acc=0.9102 | val_loss=0.4434
+  epoch  20 | val_acc=0.8397 | train_acc=0.9247 | val_loss=0.4608
+  epoch  25 | val_acc=0.8188 | train_acc=0.9302 | val_loss=0.4540
