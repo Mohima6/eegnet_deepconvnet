@@ -7,7 +7,7 @@ SAVE_DIR = "outputs"
 FIG_DIR = os.path.join(SAVE_DIR, "figures")
 os.makedirs(SAVE_DIR, exist_ok=True)
 os.makedirs(FIG_DIR, exist_ok=True)
-classes = ('A', 'F', 'C')  # 3-class: AD, FTD, CN — per mentor instruction
+classes = ('A', 'F', 'C')  
 Xtr, ytr, Xval, yval, Xte, yte, split_info = read_ds004504(
     DATA_DIR, classes=classes,
     window_sec=4.0, overlap=0.5, resample_hz=128.0,
@@ -47,7 +47,7 @@ train_counts = class_counts(ytr, len(classes))
 val_counts   = class_counts(yval, len(classes))
 test_counts  = class_counts(yte, len(classes))
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
-# Panel 1: class distribution per split (grouped bar chart) 
+# Panel 1: class distribution per split 
 x = np.arange(len(classes))
 width = 0.25
 axes[0].bar(x - width, train_counts, width, label="Train")
