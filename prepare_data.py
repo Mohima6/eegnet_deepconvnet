@@ -18,7 +18,7 @@ Xtr, ytr, Xval, yval, Xte, yte, split_info = read_ds004504(
     train_frac=0.75, val_frac=0.15, test_frac=0.10
 )
 
-# ---- Save all splits + metadata needed by the training script ----
+
 save_path = os.path.join(SAVE_DIR, "epoched_data.npz")
 np.savez(
     save_path,
@@ -43,7 +43,7 @@ print("Train subjects:", len(split_info["train_subjects"]))
 print("Val subjects:  ", len(split_info["val_subjects"]))
 print("Test subjects: ", len(split_info["test_subjects"]))
 
-# ---- Also save subject split lists as plain text, for quick inspection ----
+
 splits_txt = os.path.join(SAVE_DIR, "subject_splits.txt")
 with open(splits_txt, "w") as f:
     f.write("Train subjects:\n" + "\n".join(split_info["train_subjects"]) + "\n\n")
@@ -51,10 +51,6 @@ with open(splits_txt, "w") as f:
     f.write("Test subjects:\n" + "\n".join(split_info["test_subjects"]) + "\n")
 print(f"Saved subject split lists to {splits_txt}")
 
-
-# =====================================================================
-# Figures: window/channel structure + class distribution across splits
-# =====================================================================
 
 def class_counts(y, n_classes):
     return np.bincount(y, minlength=n_classes)
@@ -65,7 +61,7 @@ test_counts  = class_counts(yte, len(classes))
 
 fig, axes = plt.subplots(1, 3, figsize=(18, 5))
 
-# --- Panel 1: class distribution per split (grouped bar chart) ---
+# Panel 1: class distribution per split (grouped bar chart) 
 x = np.arange(len(classes))
 width = 0.25
 axes[0].bar(x - width, train_counts, width, label="Train")
@@ -101,7 +97,7 @@ axes[1].set_ylabel("Number of subjects")
 axes[1].set_title("Subject counts across splits")
 axes[1].legend()
 
-# --- Panel 3: example epoch waveform, all channels, one window ---
+#  Panel 3: example epoch waveform, all channels, one window 
 example = Xtr[0, 0]  # shape (n_channels, window_samples)
 n_ch_plot = min(example.shape[0], 19)
 offset = np.arange(n_ch_plot)[:, None] * (np.std(example) * 6 + 1e-6)
