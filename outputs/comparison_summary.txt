@@ -1,5 +1,5 @@
-Model Comparison — 3-Class EEG Classification (AD vs FTD vs CN)
-============================================================
+Model Comparison â€” 3-Class EEG Classification (AD vs FTD vs CN)
+
 
 EEGNET
   Best epoch: 13
