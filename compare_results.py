@@ -2,13 +2,10 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
-
 SAVE_DIR = "outputs"
 FIG_DIR = os.path.join(SAVE_DIR, "figures")
 os.makedirs(FIG_DIR, exist_ok=True)
-
 class_names = {'A': 'AD', 'F': 'FTD', 'C': 'CN'}
-
 results = {}
 for name in ["eegnet", "deepconvnet"]:
     path = os.path.join(SAVE_DIR, f"{name}_results.npz")
@@ -17,19 +14,15 @@ for name in ["eegnet", "deepconvnet"]:
         continue
     r = np.load(path, allow_pickle=True)
     results[name] = r
-
     classes = list(r['classes'])
     label_names = [class_names.get(c, c) for c in classes]
-
     print(f"\n=== {name.upper()} ===")
     print(f"Best epoch: {int(r['best_epoch'])} | Best val_acc: {float(r['best_val_acc']):.4f}")
     print(f"Final test_acc: {float(r['test_acc']):.4f}")
     print(classification_report(r['labels'], r['preds'], target_names=label_names, digits=4, zero_division=0))
-
 if len(results) < 2:
     print("\nNeed both eegnet_results.npz and deepconvnet_results.npz to compare.")
 else:
-    # ---- Text summary ----
     summary_path = os.path.join(SAVE_DIR, "comparison_summary.txt")
     with open(summary_path, "w") as f:
         f.write("Model Comparison — 3-Class EEG Classification (AD vs FTD vs CN)\n" + "=" * 60 + "\n\n")
@@ -40,7 +33,6 @@ else:
             f.write(f"  FINAL test accuracy: {float(r['test_acc']):.4f}\n\n")
     print(f"\nSaved comparison summary to {summary_path}")
 
-    # ---- Bar chart: final test accuracy ----
     names = list(results.keys())
     accs = [float(results[n]['test_acc']) for n in names]
     fig, ax = plt.subplots(figsize=(6, 4.5))
@@ -53,8 +45,6 @@ else:
     plt.tight_layout()
     plt.savefig(os.path.join(FIG_DIR, "comparison_accuracy_bar.png"), dpi=150)
     plt.close(fig)
-
-    # ---- Combined val accuracy curves ----
     fig, ax = plt.subplots(figsize=(8, 5))
     colors = {'eegnet': 'steelblue', 'deepconvnet': 'seagreen'}
     for name, r in results.items():
@@ -66,7 +56,6 @@ else:
     plt.tight_layout()
     plt.savefig(os.path.join(FIG_DIR, "comparison_training_curves.png"), dpi=150)
     plt.close(fig)
-
     print("Saved comparison_accuracy_bar.png and comparison_training_curves.png")
 
 
