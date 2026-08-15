@@ -7,3 +7,6 @@ dataset/
 # Ignore Python cache
 __pycache__/
 *.pyc
+
+# Ignore trained model outputs and checkpoints
+outputs/
